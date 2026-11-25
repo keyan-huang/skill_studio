@@ -127,6 +127,51 @@ export interface ProjectGroup {
   projects: ProjectChoice[];
 }
 
+export interface CatalogFile {
+  /** Relative to the skill folder, e.g. "scripts/scan.py". */
+  path: string;
+  size: number;
+}
+
+export interface CatalogEntry {
+  /** "<catalog>:<skill name>", e.g. "anthropic:pdf". */
+  id: string;
+  catalog: string;
+  catalogLabel: string;
+  name: string;
+  description: string;
+  source: Source;
+  fileCount: number;
+  /** True when the skill includes scripts that could run on the user's computer. */
+  hasScripts: boolean;
+  /** The skill's page on GitHub. */
+  url: string;
+}
+
+export interface CatalogList {
+  entries: CatalogEntry[];
+  fetchedAt: string;
+  /** True when GitHub couldn't be reached and an older saved list is shown. */
+  stale: boolean;
+}
+
+export interface CatalogPreview extends CatalogEntry {
+  raw: string;
+  files: CatalogFile[];
+  scripts: string[];
+  /** Plain-language summary of the license. */
+  license: string;
+  licenseFile: string | null;
+}
+
+export interface DownloadResult {
+  name: string;
+  /** Where it was saved, shown to the user. */
+  location: string;
+}
+
 export interface ApiError {
   error: string;
+  /** For a name that's already taken: a free name to offer instead. */
+  suggestion?: string;
 }

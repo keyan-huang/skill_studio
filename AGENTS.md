@@ -20,7 +20,7 @@ Before making changes, read:
 3. [docs/ROADMAP.md](./docs/ROADMAP.md) — current phase and what's in scope
 4. [docs/DECISIONS.md](./docs/DECISIONS.md) — decisions already made
 
-**Current phase:** Phase 1 (MVP), steps 1–2 done. See
+**Current phase:** Phase 1 (MVP), steps 1, 2, and 4 done (step 3 skipped for now). See
 [docs/ROADMAP.md](./docs/ROADMAP.md) for the next step.
 
 **How it's built:** a local web app (D-006). React + TypeScript + Vite for the
@@ -31,12 +31,14 @@ files directly; there's no separate build step.
 - Start: `npm start` (opens the browser; set `SKILL_STUDIO_NO_OPEN=1` to skip
   opening it).
 - Check types: `npm run typecheck`.
+- Run the automated tests (only for risky parts): `npm test`.
 - Made-up sample skills live in `sample-data/`; keep them made up.
 - Skill Studio's own settings live in `~/.skill-studio/settings.json`. Set
   `SKILL_STUDIO_HOME=/tmp/some-folder` when testing so your real recent
   projects aren't changed.
 - Which skill folders each agent reads is defined once, in
-  `server/agents.ts`.
+  `server/agents.ts`. The public skill catalogs are defined in
+  `server/catalog.ts`.
 
 ## Who you're working with
 

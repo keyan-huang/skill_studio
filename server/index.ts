@@ -9,7 +9,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer as createViteServer } from 'vite';
 import type { AgentId, ProjectView, StartInfo } from '../src/shared/types.ts';
-import { AGENTS } from './agents.ts';
+import { AGENTS, skillFoldersFor } from './agents.ts';
+import { CatalogProblem, downloadSkill, isValidSkillName, loadCatalog, NameTaken, previewSkill } from './catalog.ts';
 import { assertFolder, displayPath, FolderProblem, listFolders, listProjectGroups, resolveUserPath } from './folders.ts';
 import { buildProjectView, projectName } from './project.ts';
 import { forgetProject, readSettings, rememberProject, saveAgentChoice } from './settings.ts';
@@ -141,6 +142,37 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
     return;
   }
 
+  if (route === 'GET /api/catalog') {
+    sendJson(res, 200, await loadCatalog(url.searchParams.get('refresh') === '1'));
+    return;
+  }
+
+  if (route === 'GET /api/catalog/skill') {
+    sendJson(res, 200, await previewSkill(url.searchParams.get('id') ?? ''));
+    return;
+  }
+
+  if (route === 'POST /api/download') {
+    const body = await readJsonBody(req);
+    const projectPath = typeof body['projectPath'] === 'string' ? body['projectPath'] : '';
+    const settings = await readSettings();
+    if (!settings.recent.some((entry) => entry.path === projectPath)) {
+      throw new RequestProblem(403, 'Connect this project in Skill Studio before downloading into it.');
+    }
+    const newName = typeof body['newName'] === 'string' ? body['newName'].trim() : undefined;
+    if (newName !== undefined && !isValidSkillName(newName)) {
+      throw new RequestProblem(400, 'Use only lowercase letters, numbers, and hyphens, up to 64 characters.');
+    }
+    const folder = skillFoldersFor(readAgent(body['agent']) ?? 'copilot', 'project')?.[0] ?? '.github/skills';
+    const result = await downloadSkill({
+      id: typeof body['id'] === 'string' ? body['id'] : '',
+      skillsFolder: path.join(projectPath, folder),
+      newName,
+    });
+    sendJson(res, 200, { name: result.name, location: displayPath(result.folder) });
+    return;
+  }
+
   if (route === 'POST /api/forget') {
     const body = await readJsonBody(req);
     if (typeof body['path'] === 'string') await forgetProject(body['path']);
@@ -199,7 +231,10 @@ async function main(): Promise<void> {
       handleApi(req, res).catch((error: unknown) => {
         if (error instanceof FolderProblem) {
           sendJson(res, 404, { error: error.message });
-
+        } else if (error instanceof NameTaken) {
+          sendJson(res, 409, { error: error.message, suggestion: error.suggestion });
+        } else if (error instanceof CatalogProblem) {
+          sendJson(res, 502, { error: error.message });
         } else if (error instanceof RequestProblem) {
           sendJson(res, error.status, { error: error.message });
         } else {

@@ -27,9 +27,16 @@ project folder to see every skill loaded for it, including the ones from your
 personal skills folder, or explore the made-up sample skills. Press `Ctrl+C`
 in the terminal to stop it.
 
-Skill Studio runs only on your computer and doesn't change your projects or
-skills. It remembers your recent projects and the agent you picked for each
-in `~/.skill-studio/settings.json`.
+You can also search for public skills (from Awesome Copilot and Anthropic)
+and download one into your project. Downloads never replace a skill you
+already have.
+
+Skill Studio runs on your computer. It only goes online to fetch public
+skills from GitHub when you search or download them. It remembers your
+recent projects and a saved list of online skills in `~/.skill-studio/`.
+
+Optional: add `GITHUB_TOKEN=...` to a local `.env` file to raise GitHub's
+request limit. `.env` files are never committed.
 
 ## Local configuration
 

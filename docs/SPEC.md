@@ -718,9 +718,17 @@ messages, and personal data.
   user to approve. The agent runs read-only: it can't edit files or run
   commands. (See [DECISIONS.md](./DECISIONS.md) D-014.)
 - **Where Skill Studio keeps its own data:** a private folder on the user's
-  computer, `~/.skill-studio/`. Today it holds `settings.json`: recent
-  project locations and the agent chosen per project. Nothing else is saved,
-  and nothing is sent anywhere.
+  computer, `~/.skill-studio/`. It holds `settings.json` (recent project
+  locations and the agent chosen per project) and `catalog.json` (the saved
+  list of public online skills, refreshed at most once a day).
+- **What goes online:** only when the user searches online skills or
+  downloads one, Skill Studio asks GitHub for public files from the
+  catalogs. Nothing about the user's projects or skills is sent. An optional
+  `GITHUB_TOKEN` in a local `.env` file raises GitHub's request limit.
+- **Downloads never overwrite.** A downloaded skill goes into the folder the
+  project's agent reads (for example `.github/skills/`). If the name is
+  taken, the user picks a new one; the existing skill is never touched.
+  Skills that include scripts show a warning first.
 - **Never alter originals.** Uploads are copies. Parking moves a skill
   without changing its contents. Mixes, notes, and wins rules are stored
   separately.

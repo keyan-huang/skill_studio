@@ -269,6 +269,229 @@ button {
   color: var(--ink);
 }
 
+/* ---------- Search ---------- */
+
+.search {
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+  margin-top: 28px;
+}
+
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-field svg {
+  position: absolute;
+  left: 14px;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+.search-field .field {
+  width: 100%;
+  padding-left: 42px;
+  font-size: 1.0625rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.filter {
+  position: relative;
+}
+
+.filter input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.filter span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.filter input:checked + span {
+  background: var(--tape);
+  border-color: var(--tape);
+  color: var(--tape-ink);
+  font-weight: 650;
+}
+
+.filter input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.search-empty {
+  margin-top: 24px;
+  color: var(--ink-soft);
+}
+
+/* Online skills: a crate of records you haven't put on the desk yet. */
+.online-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  color: var(--ink-soft);
+}
+
+.online-updated {
+  margin: 4px 0 14px;
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
+}
+
+.crate {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crate-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  grid-template-areas:
+    'tape description'
+    'tape meta';
+  align-items: start;
+  gap: 4px 18px;
+  width: 100%;
+  padding: 12px 14px;
+  background: transparent;
+  border: 1px dashed var(--hairline-strong);
+  border-radius: var(--radius-strip);
+  text-align: left;
+  cursor: pointer;
+}
+
+.crate-row:hover,
+.crate-row[aria-pressed='true'] {
+  background: var(--strip);
+  border-style: solid;
+}
+
+.crate-row[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px var(--tape);
+}
+
+.crate-row .tape {
+  grid-area: tape;
+  align-self: start;
+}
+
+.crate-description {
+  display: -webkit-box;
+  grid-area: description;
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.crate-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  grid-area: meta;
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
+}
+
+/* ---------- Online preview ---------- */
+
+.panel-kicker {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--focus);
+  text-underline-offset: 3px;
+}
+
+.caution {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-control);
+}
+
+.caution svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--warning);
+}
+
+.download {
+  margin: 20px 0 8px;
+  padding: 16px;
+  background: var(--strip);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-control);
+}
+
+.download .panel-subheading {
+  margin-top: 0;
+}
+
+.download form {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.field-wide {
+  width: 100%;
+}
+
+.success {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--tape);
+  border-radius: var(--radius-control);
+}
+
 /* ---------- Connect screen ---------- */
 
 .scroll {
@@ -795,6 +1018,13 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .crate-row {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'tape'
+      'description'
+      'meta';
+  }
 
   .strip {
     min-height: 0;

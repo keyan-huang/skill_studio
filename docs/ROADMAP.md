@@ -31,9 +31,11 @@ A local web app that connects to a project folder. Details in
       which AI agent the project uses.
 - [ ] **Step 3 — Upload:** add `.md` files and skill folders by choosing or
       dragging and dropping; plain messages for anything that isn't a valid
-      skill.
-- [ ] **Step 4 — Search and download:** search your skills plus public
-      catalogs; preview and download into the project without overwriting.
+      skill. *(Skipped for now; step 4 was built first.)*
+- [x] **Step 4 — Search and download:** search your skills plus public
+      catalogs (Awesome Copilot and Anthropic's skills); preview with license,
+      files, and a scripts warning; download into the project without ever
+      overwriting.
 - [ ] **Step 5 — Compare and ideal combination:** using the project's own
       agent, after the user approves.
 - [ ] **Step 6 — Polish and check:** remaining screen states, keyboard and

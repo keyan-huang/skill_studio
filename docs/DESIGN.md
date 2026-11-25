@@ -177,22 +177,27 @@ Screens follow the loop in [SPEC.md §7](./SPEC.md#7-how-skill-studio-works).
    projects (every project folder next to the open one and next to recent
    ones, such as everything in ~/Documents/Projects), plus "Sample skills"
    and "Another folder…" for quick switching.
-3. **Upload**: drop in skill files or folders; plain results ("Found 23
+3. **Search and download**: one search box above the banks with filters
+   (All, This project, Your personal folder, Online). Online skills appear
+   as a "crate" of dashed rows, since they aren't on the desk yet. Picking
+   one opens a preview with its source, license, files, a scripts warning,
+   and a **Download** button placed above the file list.
+4. **Upload**: drop in skill files or folders; plain results ("Found 23
    skills · 1 folder isn't a skill yet").
-4. **Library**: skill cards grouped by job, with space and source badges and
+5. **Library**: skill cards grouped by job, with space and source badges and
    search.
-5. **Overlap map**: clusters by job with duplicate, overlap, and clash
+6. **Overlap map**: clusters by job with duplicate, overlap, and clash
    markers, plus a side-by-side compare.
-6. **Skill detail**: plain summary, space, source, what it can access,
+7. **Skill detail**: plain summary, space, source, what it can access,
    related skills, and example runs.
-7. **Mix builder**: goal at the top, job slots, "Left out" shelf, coverage
+8. **Mix builder**: goal at the top, job slots, "Left out" shelf, coverage
    check, wins rules, and **Save** / **Combine**.
-8. **Combine**: choose combined skill or bundle (with the recommendation and
+9. **Combine**: choose combined skill or bundle (with the recommendation and
    reason), then the combine preview, name, and description.
-9. **Load-back preview**: before and after of the VS Code space, parked-skill
+10. **Load-back preview**: before and after of the VS Code space, parked-skill
    toggles, team warning when relevant, and **Load back**.
-10. **Parked shelf**: every parked skill, why it was parked, and **Restore**.
-11. **Run view**: outcome summary at the top, run map below, contribution
+11. **Parked shelf**: every parked skill, why it was parked, and **Restore**.
+12. **Run view**: outcome summary at the top, run map below, contribution
     highlight and summary side by side, details panel on the right.
 
 ## 6. States to design

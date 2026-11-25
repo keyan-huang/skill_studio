@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
-import type { AgentId, ProjectView, RecentProject } from './shared/types.ts';
+import type { AgentId, CatalogEntry, ProjectView, RecentProject } from './shared/types.ts';
 import { api } from './api.ts';
 import { Header } from './components/Header.tsx';
 import { ConnectScreen } from './components/ConnectScreen.tsx';
 import { AgentNote } from './components/AgentNote.tsx';
 import { ConsoleBank } from './components/ConsoleBank.tsx';
 import { DetailsPanel } from './components/DetailsPanel.tsx';
+import { OnlinePanel } from './components/OnlinePanel.tsx';
+import { OnlineResults, type CatalogState } from './components/OnlineResults.tsx';
+import { SearchBar, type SearchFilter } from './components/SearchBar.tsx';
 import { plural } from './labels.ts';
+import { matches } from './search.ts';
 
 type Target = { path: string } | { sample: true };
 type Screen = 'loading' | 'connect' | 'project';
@@ -21,6 +25,29 @@ export function App() {
   const [connectError, setConnectError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<SearchFilter>('all');
+  const [catalog, setCatalog] = useState<CatalogState>({ status: 'idle' });
+  const [selectedOnline, setSelectedOnline] = useState<CatalogEntry | null>(null);
+
+  const searching = query.trim() !== '' || filter !== 'all';
+  const wantsOnline = searching && (filter === 'all' || filter === 'online');
+
+  const loadCatalog = useCallback((refresh = false) => {
+    setCatalog({ status: 'loading' });
+    api
+      .catalog(refresh)
+      .then((list) => setCatalog({ status: 'ready', list }))
+      .catch((error: unknown) =>
+        setCatalog({ status: 'error', message: error instanceof Error ? error.message : String(error) }),
+      );
+  }, []);
+
+  // The online list is only fetched once someone searches, not on every page load.
+  useEffect(() => {
+    if (wantsOnline && catalog.status === 'idle') loadCatalog();
+  }, [wantsOnline, catalog.status, loadCatalog]);
+
   const refreshRecent = useCallback(() => {
     api
       .start()
@@ -117,6 +144,21 @@ export function App() {
   const duplicates = new Set(loaded.filter((skill) => skill.alsoIn.length > 0).map((skill) => skill.name)).size;
   const notLoaded = all.length - loaded.length;
   const selected = all.find((skill) => skill.id === selectedId) ?? null;
+  const projectSpace = view.spaces.find((space) => space.place === 'project');
+  const destinationFolder =
+    projectSpace?.folders.find((folder) => view.agents.selected && folder.readBy.includes(view.agents.selected))
+      ?.folder ?? '.github/skills';
+  const projectNames = new Set(
+    projectSpace?.skills.filter((skill) => skill.folder === destinationFolder).map((skill) => skill.name),
+  );
+  const loadedNames = new Set(loaded.map((skill) => skill.name));
+  const localSpaces = view.spaces
+    .filter((space) => filter === 'all' || filter === space.place)
+    .map((space) => ({
+      ...space,
+      skills: space.skills.filter((skill) => matches(query, skill.name, skill.description, skill.job?.label ?? '')),
+    }));
+
   const breakdown = [
     `${projectCount} in this project`,
     `${personalCount} from your personal folder`,
@@ -166,18 +208,49 @@ export function App() {
             )}
             <AgentNote agents={view.agents} busy={busy} onChoose={(agent) => target && void connect(target, agent)} />
           </div>
-          {view.spaces.map((space) => (
+          <SearchBar query={query} filter={filter} onQuery={setQuery} onFilter={setFilter} />
+          {searching && filter !== 'online' && localSpaces.every((space) => space.skills.length === 0) && (
+            <p className="search-empty">
+              {query.trim() ? `None of your loaded skills match “${query.trim()}”.` : 'No loaded skills here.'}
+            </p>
+          )}
+          {(searching ? localSpaces.filter((space) => space.skills.length > 0) : view.spaces).map((space) => (
             <ConsoleBank
               key={space.place}
               space={space}
               jobs={view.jobs}
               agentLabel={agentLabel}
-              selectedId={selectedId}
-              onSelect={(skill) => setSelectedId(skill.id)}
+              selectedId={selectedOnline ? null : selectedId}
+              onSelect={(skill) => {
+                setSelectedOnline(null);
+                setSelectedId(skill.id);
+              }}
             />
           ))}
+          {wantsOnline && (
+            <OnlineResults
+              catalog={catalog}
+              query={query}
+              loadedNames={loadedNames}
+              selectedId={selectedOnline?.id ?? null}
+              onSelect={(entry) => setSelectedOnline(entry)}
+              onRefresh={() => loadCatalog(true)}
+            />
+          )}
         </main>
-        <DetailsPanel skill={selected} jobs={view.jobs} agentLabel={agentLabel} onClose={() => setSelectedId(null)} />
+        {selectedOnline ? (
+          <OnlinePanel
+            entry={selectedOnline}
+            project={view.project}
+            agentId={view.agents.selected}
+            destinationFolder={destinationFolder}
+            projectNames={projectNames}
+            onClose={() => setSelectedOnline(null)}
+            onDownloaded={() => target && void connect(target)}
+          />
+        ) : (
+          <DetailsPanel skill={selected} jobs={view.jobs} agentLabel={agentLabel} onClose={() => setSelectedId(null)} />
+        )}
       </div>
     </div>
   );

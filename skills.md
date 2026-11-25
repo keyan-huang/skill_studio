@@ -31,3 +31,6 @@ them automatically.
 - 2026-11-24: Phase 1, step 2 (connect a project): used frontend-design and
   ui-ux-pro-max for the connect screen, folder browser, agent note, and
   duplicate and not-loaded flags on channel strips.
+- 2026-11-24: Phase 1, step 4 (search and download): used frontend-design and
+  ui-ux-pro-max for the search box and filters, the "crate" list of online
+  skills, and the preview panel with license, scripts warning, and download.
