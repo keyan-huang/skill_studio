@@ -28,3 +28,6 @@ them automatically.
   ui-ux-pro-max for the mixing-desk look (palette, Archivo type, channel
   strips with tape labels, accessibility basics), and typescript-setup for
   the TypeScript settings.
+- 2026-11-24: Phase 1, step 2 (connect a project): used frontend-design and
+  ui-ux-pro-max for the connect screen, folder browser, agent note, and
+  duplicate and not-loaded flags on channel strips.

@@ -656,6 +656,18 @@ Notes:
 
 - Personal skills load in **every** project, so Skill Studio always checks
   the personal folders when a project is connected.
+- Each agent reads different skill folders. Skill Studio counts a skill as
+  loaded only if the project's agent reads its folder; others are shown as
+  "Not loaded by [agent]":
+
+  | Agent | Project folders | Personal folders |
+  | --- | --- | --- |
+  | GitHub Copilot | `.github/skills/`, `.claude/skills/`, `.agents/skills/` | `~/.copilot/skills/`, `~/.agents/skills/` |
+  | Claude Code | `.claude/skills/` | `~/.claude/skills/` |
+  | Codex | `.agents/skills/` | `~/.agents/skills/` |
+
+  This table lives in the code (`server/agents.ts`) and wins if they
+  disagree. Re-check each agent's documentation when building new steps.
 - If two skills with the same name sit in different spaces, VS Code shows
   both. Skill Studio flags these as **duplicates**.
 - VS Code picks up skill changes in a **new chat**, so Skill Studio reminds
@@ -705,6 +717,10 @@ messages, and personal data.
   to which agent, and that it uses the user's own allowance, and wait for the
   user to approve. The agent runs read-only: it can't edit files or run
   commands. (See [DECISIONS.md](./DECISIONS.md) D-014.)
+- **Where Skill Studio keeps its own data:** a private folder on the user's
+  computer, `~/.skill-studio/`. Today it holds `settings.json`: recent
+  project locations and the agent chosen per project. Nothing else is saved,
+  and nothing is sent anywhere.
 - **Never alter originals.** Uploads are copies. Parking moves a skill
   without changing its contents. Mixes, notes, and wins rules are stored
   separately.

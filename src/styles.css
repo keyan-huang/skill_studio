@@ -101,20 +101,17 @@ button {
   letter-spacing: 0.01em;
 }
 
-.project-chip {
+.project-picker {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 6px 12px;
-  background: var(--strip);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-control);
   color: var(--ink-soft);
 }
 
-.project-name {
-  color: var(--ink);
+.project-select {
+  min-width: 200px;
+  max-width: min(360px, 60vw);
+  background: var(--strip);
   font-weight: 600;
 }
 
@@ -128,10 +125,16 @@ button {
   font-stretch: 80%;
 }
 
-.header-note {
-  margin-left: auto;
+.agent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--ink-soft);
-  font-size: 0.875rem;
+}
+
+.agent-name {
+  color: var(--ink);
+  font-weight: 600;
 }
 
 /* ---------- Console ---------- */
@@ -188,6 +191,263 @@ button {
   list-style: none;
 }
 
+.bank-folders {
+  margin: -8px 0 16px;
+  color: var(--ink-faint);
+  font-size: 0.875rem;
+}
+
+.console-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 8px;
+}
+
+.console-actions .console-breakdown {
+  margin-top: 0;
+}
+
+.agent-clues {
+  margin-top: 6px;
+}
+
+.agent-clues summary {
+  width: fit-content;
+  color: var(--focus);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.agent-clues ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.notice {
+  max-width: 70ch;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+}
+
+.agent-note {
+  display: flex;
+  gap: 10px;
+  max-width: 72ch;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--bank);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-control);
+  color: var(--ink-soft);
+}
+
+.agent-note > svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.agent-note strong {
+  color: var(--ink);
+}
+
+.agent-note-choice {
+  border-color: var(--tape);
+}
+
+.agent-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+  color: var(--ink);
+}
+
+/* ---------- Connect screen ---------- */
+
+.scroll {
+  overflow-y: auto;
+  padding: 32px 28px 56px;
+}
+
+.connect {
+  display: grid;
+  gap: 28px;
+  max-width: 760px;
+}
+
+.connect-intro h1 {
+  font-size: clamp(1.625rem, 1.2rem + 1.3vw, 2.25rem);
+  font-weight: 650;
+  font-stretch: 112%;
+  line-height: 1.15;
+}
+
+.connect-intro p {
+  max-width: 62ch;
+  margin: 10px 0 16px;
+  color: var(--ink-soft);
+  font-size: 1.0625rem;
+}
+
+.connect-section {
+  padding: 20px;
+  background: var(--bank);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-bank);
+}
+
+.connect-section h2 {
+  margin-bottom: 12px;
+  font-size: 1.1875rem;
+  font-weight: 650;
+}
+
+.connect-sample p {
+  margin-bottom: 12px;
+  color: var(--ink-soft);
+}
+
+.recent-list,
+.browser-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent-row,
+.browser-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recent-open,
+.browser-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: var(--strip);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-control);
+  text-align: left;
+  cursor: pointer;
+}
+
+.recent-open {
+  flex-wrap: wrap;
+  column-gap: 14px;
+}
+
+.recent-open:hover,
+.browser-open:hover {
+  background: var(--strip-hover);
+}
+
+.recent-name {
+  font-weight: 650;
+}
+
+.recent-open .path {
+  color: var(--ink-faint);
+}
+
+.field-label {
+  display: block;
+  font-weight: 600;
+}
+
+.field-hint {
+  margin: 2px 0 8px;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.paste-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.field {
+  min-height: 44px;
+  padding: 8px 12px;
+  background: var(--console);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font: inherit;
+}
+
+.paste-row .field {
+  flex: 1 1 280px;
+  font-family: var(--font-path);
+  font-size: 0.9375rem;
+}
+
+.field[aria-invalid='true'] {
+  border-color: var(--warning);
+}
+
+.field-select {
+  min-height: 40px;
+  padding: 6px 10px;
+}
+
+.field-error {
+  margin-top: 8px;
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.browser {
+  display: grid;
+  gap: 10px;
+}
+
+.browser-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.browser-location {
+  flex: 1 1 200px;
+  color: var(--ink);
+}
+
+.browser-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.browser-empty {
+  padding: 8px 0;
+  color: var(--ink-soft);
+}
+
+.tag {
+  margin-left: auto;
+  padding: 1px 8px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 4px;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+}
+
 /* ---------- Channel strip ---------- */
 
 .strip {
@@ -196,7 +456,7 @@ button {
   gap: 10px;
   width: 100%;
   height: 100%;
-  min-height: 280px;
+  min-height: 220px;
   padding: 14px 14px 18px;
   background: var(--strip);
   border: 1px solid var(--hairline);
@@ -245,14 +505,35 @@ button {
   -webkit-line-clamp: 5;
 }
 
-.strip-problem {
+.strip-flags {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
+  /* Pushes the flags and tape label to the bottom of every strip. */
   margin-top: auto;
-  color: var(--warning);
-  font-size: 0.875rem;
+}
+
+.flag {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 0.8125rem;
   font-weight: 600;
+  line-height: 1.35;
+}
+
+.flag svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.flag-duplicate {
+  color: var(--tape);
+}
+
+.flag-problem {
+  color: var(--warning);
 }
 
 .strip-source {
@@ -260,9 +541,14 @@ button {
   font-size: 0.8125rem;
 }
 
-/* Pushes the source and tape label to the bottom of every strip. */
-.strip-description + .strip-source {
-  margin-top: auto;
+/* Found on disk, but the connected agent doesn't read it. */
+.strip-off {
+  border-top-style: dashed;
+  background: transparent;
+}
+
+.strip-off .tape {
+  opacity: 0.7;
 }
 
 /* The masking-tape label engineers stick on each channel. */
@@ -414,6 +700,27 @@ button {
   background: var(--strip);
 }
 
+.button,
+.button-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button-small {
+  min-height: 40px;
+  padding: 6px 14px;
+  font-size: 0.9375rem;
+}
+
+.button:disabled,
+.icon-button:disabled,
+.recent-open:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .icon-button {
   display: grid;
   flex: none;
@@ -461,7 +768,8 @@ button {
     display: block;
   }
 
-  .console {
+  .console,
+  .scroll {
     overflow: visible;
     padding: 24px 16px 32px;
   }
@@ -470,10 +778,6 @@ button {
     padding: 12px 16px;
   }
 
-  .header-note {
-    margin-left: 0;
-    flex-basis: 100%;
-  }
 
   .panel {
     border-left: 0;
@@ -490,6 +794,7 @@ button {
   .strips {
     grid-template-columns: 1fr;
   }
+
 
   .strip {
     min-height: 0;

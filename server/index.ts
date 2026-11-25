@@ -4,43 +4,61 @@
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import http from 'node:http';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer as createViteServer } from 'vite';
-import type { ProjectView } from '../src/shared/types.ts';
-import { PERSONAL_SKILL_FOLDERS, PROJECT_SKILL_FOLDERS, scanSpace, type SkillNotes } from './skills.ts';
+import type { AgentId, ProjectView, StartInfo } from '../src/shared/types.ts';
+import { AGENTS } from './agents.ts';
+import { assertFolder, displayPath, FolderProblem, listFolders, listProjectGroups, resolveUserPath } from './folders.ts';
+import { buildProjectView, projectName } from './project.ts';
+import { forgetProject, readSettings, rememberProject, saveAgentChoice } from './settings.ts';
+import type { SkillNotes } from './skills.ts';
 
 const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SAMPLE_ROOT = path.join(APP_ROOT, 'sample-data');
 const HOST = '127.0.0.1';
 const FIRST_PORT = Number(process.env['PORT'] ?? 5317);
+const MAX_BODY_BYTES = 64 * 1024;
 
-async function sampleProjectView(): Promise<ProjectView> {
+class RequestProblem extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function sampleProjectView(agent: AgentId | undefined): Promise<ProjectView> {
   const notesText = await readFile(path.join(SAMPLE_ROOT, 'studio-notes.json'), 'utf8');
   const notes = JSON.parse(notesText) as SkillNotes & { projectName: string };
+  return buildProjectView({
+    name: notes.projectName,
+    root: path.join(SAMPLE_ROOT, 'sample-project'),
+    home: path.join(SAMPLE_ROOT, 'sample-personal'),
+    displayRoot: 'sample-project',
+    displayHome: 'sample-personal',
+    isSample: true,
+    notes,
+    savedAgent: agent,
+  });
+}
 
-  const [projectSpace, personalSpace] = await Promise.all([
-    scanSpace({
-      place: 'project',
-      root: path.join(SAMPLE_ROOT, 'sample-project'),
-      folders: PROJECT_SKILL_FOLDERS,
-      displayRoot: 'sample-project',
-      notes,
-    }),
-    scanSpace({
-      place: 'personal',
-      root: path.join(SAMPLE_ROOT, 'sample-personal'),
-      folders: PERSONAL_SKILL_FOLDERS,
-      displayRoot: 'sample-personal',
-      notes,
-    }),
-  ]);
-
-  return {
-    project: { name: notes.projectName, location: 'sample-data/sample-project', isSample: true },
-    spaces: [projectSpace, personalSpace],
-    jobs: notes.jobs,
-  };
+async function realProjectView(root: string, agent: AgentId | undefined): Promise<ProjectView> {
+  await assertFolder(root);
+  if (agent) await saveAgentChoice(root, agent);
+  const settings = await readSettings();
+  const view = await buildProjectView({
+    name: projectName(root),
+    root,
+    home: os.homedir(),
+    displayRoot: displayPath(root),
+    displayHome: '~',
+    isSample: false,
+    savedAgent: settings.agentChoice[root],
+  });
+  await rememberProject({ name: view.project.name, path: root, location: view.project.location });
+  return view;
 }
 
 function sendJson(res: http.ServerResponse, status: number, body: unknown): void {
@@ -53,12 +71,83 @@ function isLocalHost(hostHeader: string | undefined, port: number): boolean {
   return hostHeader === `localhost:${port}` || hostHeader === `${HOST}:${port}`;
 }
 
+function isLocalOrigin(origin: string | undefined, port: number): boolean {
+  return origin === undefined || origin === `http://localhost:${port}` || origin === `http://${HOST}:${port}`;
+}
+
+async function readJsonBody(req: http.IncomingMessage): Promise<Record<string, unknown>> {
+  if (!req.headers['content-type']?.startsWith('application/json')) {
+    throw new RequestProblem(415, 'Expected JSON.');
+  }
+  let size = 0;
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    size += (chunk as Buffer).length;
+    if (size > MAX_BODY_BYTES) throw new RequestProblem(413, 'Request is too large.');
+    chunks.push(chunk as Buffer);
+  }
+  try {
+    const data: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+    if (typeof data !== 'object' || data === null) throw new Error('not an object');
+    return data as Record<string, unknown>;
+  } catch {
+    throw new RequestProblem(400, 'Request body is not valid JSON.');
+  }
+}
+
+function readAgent(value: unknown): AgentId | undefined {
+  return AGENTS.some((agent) => agent.id === value) ? (value as AgentId) : undefined;
+}
+
 async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
   const url = new URL(req.url ?? '/', 'http://localhost');
-  if (req.method === 'GET' && url.pathname === '/api/project') {
-    sendJson(res, 200, await sampleProjectView());
+  const route = `${req.method} ${url.pathname}`;
+
+  if (route === 'GET /api/start') {
+    const settings = await readSettings();
+    const info: StartInfo = {
+      recent: settings.recent,
+      lastProject: settings.recent[0]?.path ?? null,
+      home: os.homedir(),
+    };
+    sendJson(res, 200, info);
     return;
   }
+
+  if (route === 'GET /api/projects') {
+    const current = url.searchParams.get('current');
+    const settings = await readSettings();
+    sendJson(res, 200, await listProjectGroups(current ? resolveUserPath(current) : null, settings.recent));
+    return;
+  }
+
+  if (route === 'GET /api/folders') {
+    const requested = url.searchParams.get('path');
+    sendJson(res, 200, await listFolders(requested ? resolveUserPath(requested) : os.homedir()));
+    return;
+  }
+
+  if (route === 'POST /api/connect') {
+    const body = await readJsonBody(req);
+    const agent = readAgent(body['agent']);
+    if (body['sample'] === true) {
+      sendJson(res, 200, await sampleProjectView(agent));
+      return;
+    }
+    if (typeof body['path'] !== 'string' || body['path'].trim() === '') {
+      throw new RequestProblem(400, 'Choose a project folder first.');
+    }
+    sendJson(res, 200, await realProjectView(resolveUserPath(body['path']), agent));
+    return;
+  }
+
+  if (route === 'POST /api/forget') {
+    const body = await readJsonBody(req);
+    if (typeof body['path'] === 'string') await forgetProject(body['path']);
+    sendJson(res, 200, { ok: true });
+    return;
+  }
+
   sendJson(res, 404, { error: 'Not found' });
 }
 
@@ -103,9 +192,20 @@ async function main(): Promise<void> {
       return;
     }
     if (req.url?.startsWith('/api/')) {
+      if (req.method !== 'GET' && !isLocalOrigin(req.headers.origin, port)) {
+        sendJson(res, 403, { error: 'Skill Studio only accepts requests from its own page.' });
+        return;
+      }
       handleApi(req, res).catch((error: unknown) => {
-        console.error(error);
-        sendJson(res, 500, { error: 'Something went wrong while reading skills.' });
+        if (error instanceof FolderProblem) {
+          sendJson(res, 404, { error: error.message });
+
+        } else if (error instanceof RequestProblem) {
+          sendJson(res, error.status, { error: error.message });
+        } else {
+          console.error(error);
+          sendJson(res, 500, { error: 'Something went wrong while reading skills.' });
+        }
       });
       return;
     }

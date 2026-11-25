@@ -170,22 +170,29 @@ Screens follow the loop in [SPEC.md §7](./SPEC.md#7-how-skill-studio-works).
 1. **Home**: progress path (Upload → Mix → Combine → Load back), library
    summary ("23 skills from 2 spaces · 3 duplicates · 2 clashes"), loaded
    mix, saved mixes, recent runs, and a "Try with sample data" button.
-2. **Upload**: choose VS Code spaces (project, personal) or drop in folders;
-   plain results ("Found 23 skills · 1 folder isn't a skill yet").
-3. **Library**: skill cards grouped by job, with space and source badges and
+2. **Connect a project**: recent projects, paste a folder location, an
+   in-app folder browser (folders that look like projects are marked), and
+   "Explore sample skills." Opens the last project automatically. Once a
+   project is open, a **Project** dropdown in the header lists the user's
+   projects (every project folder next to the open one and next to recent
+   ones, such as everything in ~/Documents/Projects), plus "Sample skills"
+   and "Another folder…" for quick switching.
+3. **Upload**: drop in skill files or folders; plain results ("Found 23
+   skills · 1 folder isn't a skill yet").
+4. **Library**: skill cards grouped by job, with space and source badges and
    search.
-4. **Overlap map**: clusters by job with duplicate, overlap, and clash
+5. **Overlap map**: clusters by job with duplicate, overlap, and clash
    markers, plus a side-by-side compare.
-5. **Skill detail**: plain summary, space, source, what it can access,
+6. **Skill detail**: plain summary, space, source, what it can access,
    related skills, and example runs.
-6. **Mix builder**: goal at the top, job slots, "Left out" shelf, coverage
+7. **Mix builder**: goal at the top, job slots, "Left out" shelf, coverage
    check, wins rules, and **Save** / **Combine**.
-7. **Combine**: choose combined skill or bundle (with the recommendation and
+8. **Combine**: choose combined skill or bundle (with the recommendation and
    reason), then the combine preview, name, and description.
-8. **Load-back preview**: before and after of the VS Code space, parked-skill
+9. **Load-back preview**: before and after of the VS Code space, parked-skill
    toggles, team warning when relevant, and **Load back**.
-9. **Parked shelf**: every parked skill, why it was parked, and **Restore**.
-10. **Run view**: outcome summary at the top, run map below, contribution
+10. **Parked shelf**: every parked skill, why it was parked, and **Restore**.
+11. **Run view**: outcome summary at the top, run map below, contribution
     highlight and summary side by side, details panel on the right.
 
 ## 6. States to design

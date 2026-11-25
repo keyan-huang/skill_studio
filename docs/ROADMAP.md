@@ -25,9 +25,10 @@ A local web app that connects to a project folder. Details in
 - [x] **Step 1 — Foundation:** app setup with one start command (`npm start`),
       mixing-desk page layout, and made-up sample data (10 skills with a
       planted duplicate, overlaps, a clash, and a gap).
-- [ ] **Step 2 — Connect a project:** pick any project folder; show every
-      skill loaded for it, from the project **and** the personal skills
-      folders; detect which AI agent the project uses.
+- [x] **Step 2 — Connect a project:** pick any project folder (browse,
+      paste, or recent); show every skill loaded for it, from the project
+      **and** the personal skills folders, with duplicates flagged; detect
+      which AI agent the project uses.
 - [ ] **Step 3 — Upload:** add `.md` files and skill folders by choosing or
       dragging and dropping; plain messages for anything that isn't a valid
       skill.

@@ -15,7 +15,7 @@ export const SOURCE_LABEL: Record<Source, string> = {
   team: 'Your team',
   official: 'Official',
   community: 'Community',
-  unknown: 'Source unknown',
+  unknown: 'Not known yet',
 };
 
 // Channel colors, tuned for the dark console. Always shown with a text label.
@@ -30,4 +30,15 @@ export function jobColor(job: Job | null, jobs: Job[]): string {
 
 export function plural(count: number, one: string, many = `${one}s`): string {
   return `${count} ${count === 1 ? one : many}`;
+}
+
+const PLACE_SHORT: Record<Place, string> = {
+  project: 'this project',
+  personal: 'your personal folder',
+};
+
+export function duplicateText(alsoIn: Place[]): string {
+  const places = [...new Set(alsoIn)];
+  if (places.length === 1 && alsoIn.length === 1) return `Duplicate: also in ${PLACE_SHORT[places[0] ?? 'project']}`;
+  return `Duplicate: ${alsoIn.length + 1} copies loaded`;
 }

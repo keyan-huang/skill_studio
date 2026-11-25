@@ -1,13 +1,8 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import type { Job, Place, Skill, Source, Space } from '../src/shared/types.ts';
-
-/** Skill folders VS Code reads inside a project. */
-export const PROJECT_SKILL_FOLDERS = ['.github/skills', '.claude/skills', '.agents/skills'];
-
-/** Skill folders VS Code reads in the user's home folder. */
-export const PERSONAL_SKILL_FOLDERS = ['.copilot/skills', '.claude/skills', '.agents/skills'];
+import type { Job, Place, Skill, SkillFolder, Source, Space } from '../src/shared/types.ts';
+import { agentsReading } from './agents.ts';
 
 const MAX_FILES_LISTED = 50;
 const MAX_RAW_CHARS = 200_000;
@@ -30,15 +25,20 @@ interface ScanOptions {
 export async function scanSpace(options: ScanOptions): Promise<Space> {
   const { place, root, folders, displayRoot, notes } = options;
   const skills: Skill[] = [];
+  const checked: SkillFolder[] = [];
 
   for (const folder of folders) {
     const base = path.join(root, folder);
+    const display = `${displayRoot}/${folder}`;
     let entries;
     try {
       entries = await readdir(base, { withFileTypes: true });
     } catch {
-      continue; // Most people only have some of these folders.
+      // Most people only have some of these folders.
+      checked.push({ folder, display, exists: false, readBy: agentsReading(place, folder) });
+      continue;
     }
+    checked.push({ folder, display, exists: true, readBy: agentsReading(place, folder) });
 
     for (const entry of entries) {
       if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
@@ -46,13 +46,13 @@ export async function scanSpace(options: ScanOptions): Promise<Space> {
       const skillFile = path.join(skillDir, 'SKILL.md');
       if (!(await isFile(skillFile))) continue;
 
-      const location = `${displayRoot}/${folder}/${entry.name}`;
-      skills.push(await readSkill({ skillDir, skillFile, folderName: entry.name, place, location, notes }));
+      const location = `${display}/${entry.name}`;
+      skills.push(await readSkill({ skillDir, skillFile, folderName: entry.name, place, folder, location, notes }));
     }
   }
 
   skills.sort((a, b) => a.name.localeCompare(b.name));
-  return { place, folders, skills };
+  return { place, folders: checked, skills };
 }
 
 async function readSkill(args: {
@@ -60,10 +60,11 @@ async function readSkill(args: {
   skillFile: string;
   folderName: string;
   place: Place;
+  folder: string;
   location: string;
   notes?: SkillNotes | undefined;
 }): Promise<Skill> {
-  const { skillDir, skillFile, folderName, place, location, notes } = args;
+  const { skillDir, skillFile, folderName, place, folder, location, notes } = args;
   const text = await readFile(skillFile, 'utf8');
   const header = readHeader(text);
   const name = header.name ?? folderName;
@@ -76,6 +77,7 @@ async function readSkill(args: {
     name,
     description: header.description ?? '',
     place,
+    folder,
     location,
     files,
     moreFiles: more,
@@ -83,6 +85,8 @@ async function readSkill(args: {
     job: notes?.jobs.find((job) => job.id === jobId) ?? null,
     source: note?.source ?? 'unknown',
     problem: header.problem,
+    loaded: true,
+    alsoIn: [],
   };
 }
 

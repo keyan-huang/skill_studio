@@ -1,17 +1,36 @@
-import { FolderOpen } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import type { ProjectView } from '../shared/types.ts';
+import { ProjectPicker } from './ProjectPicker.tsx';
 
-export function Header({ project }: { project: ProjectView['project'] }) {
+interface Props {
+  view: ProjectView | null;
+  busy: boolean;
+  onSwitch: (path: string) => void;
+  onSample: () => void;
+  onOther: () => void;
+}
+
+export function Header({ view, busy, onSwitch, onSample, onOther }: Props) {
+  const agent = view?.agents.detected.find((candidate) => candidate.id === view.agents.selected);
   return (
     <header className="header">
       <p className="wordmark">Skill Studio</p>
-      <div className="project-chip" aria-label="Connected project">
-        <FolderOpen size={18} aria-hidden="true" />
-        <span className="project-name">{project.name}</span>
-        {project.isSample && <span className="sample-tag">Sample</span>}
-      </div>
-      {project.isSample && (
-        <p className="header-note">You're exploring made-up sample skills. Connecting your own project comes next.</p>
+      {view && (
+        <>
+          <ProjectPicker
+            project={view.project}
+            busy={busy}
+            onSwitch={onSwitch}
+            onSample={onSample}
+            onOther={onOther}
+          />
+          {view.project.isSample && <span className="sample-tag">Sample</span>}
+          <p className="agent-chip">
+            <Bot size={18} aria-hidden="true" />
+            <span>Agent:</span>
+            <span className="agent-name">{agent?.label ?? 'None found'}</span>
+          </p>
+        </>
       )}
     </header>
   );

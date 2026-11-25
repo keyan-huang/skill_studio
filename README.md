@@ -22,11 +22,14 @@ You need [Node.js](https://nodejs.org) version 22.18 or newer.
 2. Run `npm install` (first time only).
 3. Run `npm start`.
 
-Skill Studio opens in your browser at `http://localhost:5317`. For now it
-shows made-up sample skills; connecting your own project comes in the next
-step. Press `Ctrl+C` in the terminal to stop it.
+Skill Studio opens in your browser at `http://localhost:5317`. Connect a
+project folder to see every skill loaded for it, including the ones from your
+personal skills folder, or explore the made-up sample skills. Press `Ctrl+C`
+in the terminal to stop it.
 
-Skill Studio runs only on your computer and doesn't change any files.
+Skill Studio runs only on your computer and doesn't change your projects or
+skills. It remembers your recent projects and the agent you picked for each
+in `~/.skill-studio/settings.json`.
 
 ## Local configuration
 

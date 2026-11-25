@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { X } from 'lucide-react';
 import type { Job, Skill } from '../shared/types.ts';
-import { jobColor, PLACE_LABEL, PLACE_NOTE, SOURCE_LABEL } from '../labels.ts';
+import { duplicateText, jobColor, PLACE_LABEL, PLACE_NOTE, SOURCE_LABEL } from '../labels.ts';
 
 interface Props {
   skill: Skill | null;
   jobs: Job[];
+  agentLabel: string | null;
   onClose: () => void;
 }
 
-export function DetailsPanel({ skill, jobs, onClose }: Props) {
+export function DetailsPanel({ skill, jobs, agentLabel, onClose }: Props) {
   const [showRaw, setShowRaw] = useState(false);
   const panelRef = useRef<HTMLElement>(null);
 
@@ -49,19 +50,29 @@ export function DetailsPanel({ skill, jobs, onClose }: Props) {
       <p className="panel-description">{skill.description || 'This skill has no description.'}</p>
 
       <dl className="facts">
-        <div>
-          <dt>Job</dt>
-          <dd>
-            <span className="strip-led" aria-hidden="true" />
-            {skill.job?.label ?? 'Not sorted yet'}
-          </dd>
-        </div>
+        {skill.job && (
+          <div>
+            <dt>Job</dt>
+            <dd>
+              <span className="strip-led" aria-hidden="true" />
+              {skill.job.label}
+            </dd>
+          </div>
+        )}
         <div>
           <dt>Where it loads</dt>
           <dd>
-            {PLACE_LABEL[skill.place]}. {PLACE_NOTE[skill.place]}
+            {skill.loaded
+              ? `${PLACE_LABEL[skill.place]}. ${PLACE_NOTE[skill.place]}`
+              : `Not loaded${agentLabel ? ` by ${agentLabel}` : ''}: it doesn't read this folder.`}
           </dd>
         </div>
+        {skill.alsoIn.length > 0 && (
+          <div>
+            <dt>Duplicate</dt>
+            <dd>{capitalize(duplicateText(skill.alsoIn).replace('Duplicate: ', ''))}. The AI may pick either copy.</dd>
+          </div>
+        )}
         <div>
           <dt>Made by</dt>
           <dd>{SOURCE_LABEL[skill.source]}</dd>
@@ -98,4 +109,8 @@ export function DetailsPanel({ skill, jobs, onClose }: Props) {
       )}
     </aside>
   );
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
