@@ -73,7 +73,7 @@ export function OnlinePanel({ entry, project, agentId, destinationFolder, projec
   const destination = `${project.location}/${destinationFolder}/${finalName}`;
 
   return (
-    <aside className="panel" aria-labelledby="online-title">
+    <div className="panel">
       <div className="panel-top">
         <h2 id="online-title" className="tape tape-panel">
           {entry.name}
@@ -203,7 +203,7 @@ export function OnlinePanel({ entry, project, agentId, destinationFolder, projec
         </>
       )}
 
-    </aside>
+    </div>
   );
 }
 

@@ -84,6 +84,8 @@ export interface ProjectView {
   spaces: Space[];
   jobs: Job[];
   agents: AgentState;
+  /** True when the user chose "Don't ask again" for AI actions in this project. */
+  aiApproved: boolean;
 }
 
 export interface RecentProject {
@@ -168,6 +170,38 @@ export interface DownloadResult {
   name: string;
   /** Where it was saved, shown to the user. */
   location: string;
+}
+
+export type Relationship = 'duplicate' | 'overlap' | 'clash' | 'complement' | 'unrelated';
+
+export interface SkillRef {
+  id: string;
+  name: string;
+}
+
+export interface CompareResult {
+  agentLabel: string;
+  a: SkillRef;
+  b: SkillRef;
+  /** One-sentence answer, e.g. "Similar purpose; team-prd-writer follows your team's template." */
+  takeaway: string;
+  relationship: Relationship;
+  relationshipReason: string;
+  rows: { label: string; a: string; b: string }[];
+  clashes: string[];
+  advice: string;
+}
+
+export interface MixResult {
+  agentLabel: string;
+  task: string;
+  summary: string;
+  picks: (SkillRef & { role: string; reason: string })[];
+  leftOut: (SkillRef & { reason: string })[];
+  gaps: string[];
+  clashes: { names: string[]; advice: string }[];
+  /** Skill names the agent mentioned that aren't loaded, so they were dropped. */
+  ignoredNames: string[];
 }
 
 export interface ApiError {

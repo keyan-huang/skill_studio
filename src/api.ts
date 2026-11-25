@@ -2,6 +2,8 @@ import type {
   ApiError,
   CatalogList,
   CatalogPreview,
+  CompareResult,
+  MixResult,
   DownloadResult,
   FolderListing,
   ProjectGroup,
@@ -24,6 +26,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(url, init);
   } catch {
+    if (init?.signal?.aborted) throw new ApiProblem('Stopped.', 0);
     throw new Error("Can't reach Skill Studio. Check that it's still running in the terminal, then try again.");
   }
   const data = (await response.json().catch(() => ({}))) as T | ApiError;
@@ -32,6 +35,21 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     throw new ApiProblem(problem.error || 'Something went wrong. Try again.', response.status, problem.suggestion);
   }
   return data as T;
+}
+
+export type AiTarget = { path: string } | { sample: true };
+export interface AiApproval {
+  approved: boolean;
+  remember: boolean;
+}
+
+function jsonInit(body: unknown, signal?: AbortSignal): RequestInit {
+  return {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    ...(signal ? { signal } : {}),
+  };
 }
 
 function post<T>(url: string, body: unknown): Promise<T> {
@@ -54,4 +72,9 @@ export const api = {
   preview: (id: string) => request<CatalogPreview>(`/api/catalog/skill?id=${encodeURIComponent(id)}`),
   download: (body: { id: string; projectPath: string; agent: string | null; newName?: string }) =>
     post<DownloadResult>('/api/download', body),
+  compare: (body: AiTarget & { a: string; b: string } & AiApproval, signal: AbortSignal) =>
+    request<CompareResult>('/api/ai/compare', jsonInit(body, signal)),
+  mix: (body: AiTarget & { task: string } & AiApproval, signal: AbortSignal) =>
+    request<MixResult>('/api/ai/mix', jsonInit(body, signal)),
+  setApproval: (body: AiTarget & { approved: boolean }) => post<{ ok: true }>('/api/ai/approval', body),
 };

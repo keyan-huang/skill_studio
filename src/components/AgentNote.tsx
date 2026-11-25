@@ -4,12 +4,14 @@ import type { AgentId, AgentState } from '../shared/types.ts';
 
 interface Props {
   agents: AgentState;
+  aiApproved: boolean;
   busy: boolean;
   onChoose: (agent: AgentId) => void;
+  onAskEveryTime: () => void;
 }
 
 /** Explains which AI agent Skill Studio found for this project, and why. */
-export function AgentNote({ agents, busy, onChoose }: Props) {
+export function AgentNote({ agents, aiApproved, busy, onChoose, onAskEveryTime }: Props) {
   const selectId = useId();
   const selected = agents.detected.find((agent) => agent.id === agents.selected);
 
@@ -35,6 +37,14 @@ export function AgentNote({ agents, busy, onChoose }: Props) {
           <p>
             {agents.chosenByUser ? 'You chose' : 'Skill Studio found'} <strong>{selected.label}</strong> for this
             project.{!selected.installed && ` Its tool isn't installed, so AI features won't work with it yet.`}
+          </p>
+        )}
+        {aiApproved && (
+          <p className="agent-approval">
+            AI actions run without asking for this project.{' '}
+            <button type="button" className="link-button" onClick={onAskEveryTime} disabled={busy}>
+              Ask me every time
+            </button>
           </p>
         )}
         <details className="agent-clues">

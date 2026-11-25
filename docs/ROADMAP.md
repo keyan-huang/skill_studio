@@ -36,8 +36,9 @@ A local web app that connects to a project folder. Details in
       catalogs (Awesome Copilot and Anthropic's skills); preview with license,
       files, and a scripts warning; download into the project without ever
       overwriting.
-- [ ] **Step 5 — Compare and ideal combination:** using the project's own
-      agent, after the user approves.
+- [x] **Step 5 — Compare and ideal combination:** using the project's own
+      agent (read-only), after the user approves; "Don't ask again" per
+      project, with a way to turn it back off.
 - [ ] **Step 6 — Polish and check:** remaining screen states, keyboard and
       contrast basics, one end-to-end walkthrough.
 

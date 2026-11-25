@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { X } from 'lucide-react';
 import type { Job, Skill } from '../shared/types.ts';
 import { duplicateText, jobColor, PLACE_LABEL, PLACE_NOTE, SOURCE_LABEL } from '../labels.ts';
@@ -8,34 +8,22 @@ interface Props {
   jobs: Job[];
   agentLabel: string | null;
   onClose: () => void;
+  onCompare: (skill: Skill) => void;
 }
 
-export function DetailsPanel({ skill, jobs, agentLabel, onClose }: Props) {
+export function DetailsPanel({ skill, jobs, agentLabel, onClose, onCompare }: Props) {
   const [showRaw, setShowRaw] = useState(false);
-  const panelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setShowRaw(false);
-    const panel = panelRef.current;
-    // On small screens the panel sits below the strips, so bring it into view.
-    if (skill && panel && panel.getBoundingClientRect().top > window.innerHeight) {
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      panel.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
-    }
   }, [skill]);
 
-  if (!skill) {
-    return (
-      <aside className="panel panel-empty" aria-label="Skill details">
-        <p>Select a skill to see what it does and where it lives.</p>
-      </aside>
-    );
-  }
+  if (!skill) return null;
 
   const style = { '--channel': jobColor(skill.job, jobs) } as CSSProperties;
 
   return (
-    <aside className="panel" aria-labelledby="panel-title" style={style} ref={panelRef}>
+    <div className="panel" style={style}>
       <div className="panel-top">
         <h2 id="panel-title" className="tape tape-panel">
           {skill.name}
@@ -93,6 +81,12 @@ export function DetailsPanel({ skill, jobs, agentLabel, onClose }: Props) {
         {skill.moreFiles > 0 && <li>and {skill.moreFiles} more</li>}
       </ul>
 
+      <div className="panel-actions">
+        <button type="button" className="button button-quiet" onClick={() => onCompare(skill)}>
+          Compare with another skill
+        </button>
+      </div>
+
       <button
         type="button"
         className="button button-quiet"
@@ -107,7 +101,7 @@ export function DetailsPanel({ skill, jobs, agentLabel, onClose }: Props) {
           {skill.raw}
         </pre>
       )}
-    </aside>
+    </div>
   );
 }
 

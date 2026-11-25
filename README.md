@@ -31,8 +31,13 @@ You can also search for public skills (from Awesome Copilot and Anthropic)
 and download one into your project. Downloads never replace a skill you
 already have.
 
+You can ask your project's own AI agent (for example GitHub Copilot) to
+compare two skills or suggest the best mix of skills for a task. Skill Studio
+always shows what it will send and asks first.
+
 Skill Studio runs on your computer. It only goes online to fetch public
-skills from GitHub when you search or download them. It remembers your
+skills from GitHub when you search or download them, and to ask your AI
+agent when you approve it. It remembers your
 recent projects and a saved list of online skills in `~/.skill-studio/`.
 
 Optional: add `GITHUB_TOKEN=...` to a local `.env` file to raise GitHub's

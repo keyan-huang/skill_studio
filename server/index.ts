@@ -13,7 +13,9 @@ import { AGENTS, skillFoldersFor } from './agents.ts';
 import { CatalogProblem, downloadSkill, isValidSkillName, loadCatalog, NameTaken, previewSkill } from './catalog.ts';
 import { assertFolder, displayPath, FolderProblem, listFolders, listProjectGroups, resolveUserPath } from './folders.ts';
 import { buildProjectView, projectName } from './project.ts';
-import { forgetProject, readSettings, rememberProject, saveAgentChoice } from './settings.ts';
+import { forgetProject, readSettings, rememberProject, saveAgentChoice, setAiApproval } from './settings.ts';
+import { AgentProblem, askAgent } from './agent-runner.ts';
+import { comparePrompt, mixPrompt, readCompare, readMix } from './ai.ts';
 import type { SkillNotes } from './skills.ts';
 
 const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,7 +51,7 @@ async function realProjectView(root: string, agent: AgentId | undefined): Promis
   await assertFolder(root);
   if (agent) await saveAgentChoice(root, agent);
   const settings = await readSettings();
-  const view = await buildProjectView({
+  return buildProjectView({
     name: projectName(root),
     root,
     home: os.homedir(),
@@ -58,8 +60,58 @@ async function realProjectView(root: string, agent: AgentId | undefined): Promis
     isSample: false,
     savedAgent: settings.agentChoice[root],
   });
-  await rememberProject({ name: view.project.name, path: root, location: view.project.location });
+}
+
+type Target = { sample: true } | { path: string };
+
+function readTarget(body: Record<string, unknown>): Target {
+  if (body['sample'] === true) return { sample: true };
+  if (typeof body['path'] !== 'string' || body['path'].trim() === '') {
+    throw new RequestProblem(400, 'Choose a project folder first.');
+  }
+  return { path: resolveUserPath(body['path']) };
+}
+
+function approvalKey(target: Target): string {
+  return 'sample' in target ? 'sample' : target.path;
+}
+
+async function viewFor(target: Target, agent?: AgentId): Promise<ProjectView> {
+  const view = 'sample' in target ? await sampleProjectView(agent) : await realProjectView(target.path, agent);
+  view.aiApproved = (await readSettings()).aiApproved[approvalKey(target)] === true;
   return view;
+}
+
+/** AI actions only run for connected projects, and only after the user approved. */
+async function checkAiRequest(target: Target, body: Record<string, unknown>): Promise<void> {
+  const settings = await readSettings();
+  if ('path' in target && !settings.recent.some((entry) => entry.path === target.path)) {
+    throw new RequestProblem(403, 'Connect this project in Skill Studio first.');
+  }
+  const key = approvalKey(target);
+  if (body['approved'] === true) {
+    if (body['remember'] === true) await setAiApproval(key, true);
+    return;
+  }
+  if (!settings.aiApproved[key]) throw new RequestProblem(428, 'Approve sending this to the agent first.');
+}
+
+function agentFor(view: ProjectView) {
+  const agent = view.agents.detected.find((candidate) => candidate.id === view.agents.selected);
+  if (!agent) throw new RequestProblem(409, 'No AI agent found for this project. Install GitHub Copilot, Claude Code, or Codex.');
+  if (!agent.installed) {
+    throw new RequestProblem(409, `${agent.label}'s command-line tool isn't installed, so Skill Studio can't ask it.`);
+  }
+  return agent;
+}
+
+/** Stops the agent if the person cancels or closes the page. */
+function abortOnClose(res: http.ServerResponse): AbortSignal {
+  const controller = new AbortController();
+  res.on('close', () => {
+    if (!res.writableEnded) controller.abort();
+  });
+  return controller.signal;
 }
 
 function sendJson(res: http.ServerResponse, status: number, body: unknown): void {
@@ -131,14 +183,12 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
   if (route === 'POST /api/connect') {
     const body = await readJsonBody(req);
     const agent = readAgent(body['agent']);
-    if (body['sample'] === true) {
-      sendJson(res, 200, await sampleProjectView(agent));
-      return;
+    const target = readTarget(body);
+    const view = await viewFor(target, agent);
+    if ('path' in target) {
+      await rememberProject({ name: view.project.name, path: target.path, location: view.project.location });
     }
-    if (typeof body['path'] !== 'string' || body['path'].trim() === '') {
-      throw new RequestProblem(400, 'Choose a project folder first.');
-    }
-    sendJson(res, 200, await realProjectView(resolveUserPath(body['path']), agent));
+    sendJson(res, 200, view);
     return;
   }
 
@@ -170,6 +220,47 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       newName,
     });
     sendJson(res, 200, { name: result.name, location: displayPath(result.folder) });
+    return;
+  }
+
+  if (route === 'POST /api/ai/compare') {
+    const body = await readJsonBody(req);
+    const target = readTarget(body);
+    await checkAiRequest(target, body);
+    const view = await viewFor(target);
+    const agent = agentFor(view);
+    const skills = view.spaces.flatMap((space) => space.skills);
+    const a = skills.find((skill) => skill.id === body['a']);
+    const b = skills.find((skill) => skill.id === body['b']);
+    if (!a || !b) throw new RequestProblem(404, "Couldn't find one of those skills. Click Check again and retry.");
+    if (a.id === b.id) throw new RequestProblem(400, 'Pick two different skills to compare.');
+    const output = await askAgent(agent.id, comparePrompt(a, b), abortOnClose(res));
+    sendJson(res, 200, readCompare(output, a, b, agent.label));
+    return;
+  }
+
+  if (route === 'POST /api/ai/mix') {
+    const body = await readJsonBody(req);
+    const target = readTarget(body);
+    const task = typeof body['task'] === 'string' ? body['task'].trim() : '';
+    if (!task) throw new RequestProblem(400, 'Describe the task first.');
+    if (task.length > 2000) throw new RequestProblem(400, 'Keep the task under 2,000 characters.');
+    await checkAiRequest(target, body);
+    const view = await viewFor(target);
+    const agent = agentFor(view);
+    const loaded = view.spaces.flatMap((space) => space.skills).filter((skill) => skill.loaded);
+    if (loaded.length === 0) throw new RequestProblem(400, 'This project has no loaded skills to combine yet.');
+    // Same name in two places: keep one entry, preferring the project's copy.
+    const unique = loaded.filter((skill, index) => loaded.findIndex((other) => other.name === skill.name) === index);
+    const output = await askAgent(agent.id, mixPrompt(task, unique), abortOnClose(res));
+    sendJson(res, 200, readMix(output, task, unique, agent.label));
+    return;
+  }
+
+  if (route === 'POST /api/ai/approval') {
+    const body = await readJsonBody(req);
+    await setAiApproval(approvalKey(readTarget(body)), body['approved'] === true);
+    sendJson(res, 200, { ok: true });
     return;
   }
 
@@ -233,8 +324,8 @@ async function main(): Promise<void> {
           sendJson(res, 404, { error: error.message });
         } else if (error instanceof NameTaken) {
           sendJson(res, 409, { error: error.message, suggestion: error.suggestion });
-        } else if (error instanceof CatalogProblem) {
-          sendJson(res, 502, { error: error.message });
+        } else if (error instanceof CatalogProblem || error instanceof AgentProblem) {
+          if (!res.writableEnded && !res.destroyed) sendJson(res, 502, { error: error.message });
         } else if (error instanceof RequestProblem) {
           sendJson(res, error.status, { error: error.message });
         } else {

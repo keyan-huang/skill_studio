@@ -725,6 +725,14 @@ messages, and personal data.
   downloads one, Skill Studio asks GitHub for public files from the
   catalogs. Nothing about the user's projects or skills is sent. An optional
   `GITHUB_TOKEN` in a local `.env` file raises GitHub's request limit.
+- **AI actions (compare, best mix):** before anything is sent, a dialog
+  lists exactly what goes to the agent and says it uses the user's own plan.
+  "Best mix" sends the task plus the names and short descriptions of loaded
+  skills, not their full instructions. "Compare" sends the full instructions
+  of the two chosen skills. The agent runs from an empty folder
+  (`~/.skill-studio/agent-room`) with no tools, so it can't open files,
+  change anything, or run commands. "Don't ask again" is saved per project
+  in `settings.json` and can be turned off from the agent note.
 - **Downloads never overwrite.** A downloaded skill goes into the folder the
   project's agent reads (for example `.github/skills/`). If the name is
   taken, the user picks a new one; the existing skill is never touched.

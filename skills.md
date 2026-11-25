@@ -34,3 +34,6 @@ them automatically.
 - 2026-11-24: Phase 1, step 4 (search and download): used frontend-design and
   ui-ux-pro-max for the search box and filters, the "crate" list of online
   skills, and the preview panel with license, scripts warning, and download.
+- 2026-11-24: Phase 1, step 5 (compare and best mix): used frontend-design and
+  ui-ux-pro-max for the "Ask the agent" section, approval dialog, mix slots,
+  left-out list, and side-by-side comparison table.

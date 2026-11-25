@@ -7,6 +7,8 @@ import { ConnectScreen } from './components/ConnectScreen.tsx';
 import { AgentNote } from './components/AgentNote.tsx';
 import { ConsoleBank } from './components/ConsoleBank.tsx';
 import { DetailsPanel } from './components/DetailsPanel.tsx';
+import { Drawer } from './components/Drawer.tsx';
+import { AiStudio } from './components/AiStudio.tsx';
 import { OnlinePanel } from './components/OnlinePanel.tsx';
 import { OnlineResults, type CatalogState } from './components/OnlineResults.tsx';
 import { SearchBar, type SearchFilter } from './components/SearchBar.tsx';
@@ -29,6 +31,7 @@ export function App() {
   const [filter, setFilter] = useState<SearchFilter>('all');
   const [catalog, setCatalog] = useState<CatalogState>({ status: 'idle' });
   const [selectedOnline, setSelectedOnline] = useState<CatalogEntry | null>(null);
+  const [compareSeed, setCompareSeed] = useState<{ id: string; nonce: number } | null>(null);
 
   const searching = query.trim() !== '' || filter !== 'all';
   const wantsOnline = searching && (filter === 'all' || filter === 'online');
@@ -206,8 +209,30 @@ export function App() {
                 load.
               </p>
             )}
-            <AgentNote agents={view.agents} busy={busy} onChoose={(agent) => target && void connect(target, agent)} />
+            <AgentNote
+              agents={view.agents}
+              aiApproved={view.aiApproved}
+              busy={busy}
+              onChoose={(agent) => target && void connect(target, agent)}
+              onAskEveryTime={() => {
+                if (!target) return;
+                void api.setApproval({ ...target, approved: false }).then(() => connect(target));
+              }}
+            />
           </div>
+          {target && (
+            <AiStudio
+              key={view.project.path || 'sample'}
+              view={view}
+              target={target}
+              compareSeed={compareSeed}
+              onSelectSkill={(id) => {
+                setSelectedOnline(null);
+                setSelectedId(id);
+              }}
+              onApprovalSaved={() => void connect(target)}
+            />
+          )}
           <SearchBar query={query} filter={filter} onQuery={setQuery} onFilter={setFilter} />
           {searching && filter !== 'online' && localSpaces.every((space) => space.skills.length === 0) && (
             <p className="search-empty">
@@ -238,19 +263,37 @@ export function App() {
             />
           )}
         </main>
-        {selectedOnline ? (
-          <OnlinePanel
-            entry={selectedOnline}
-            project={view.project}
-            agentId={view.agents.selected}
-            destinationFolder={destinationFolder}
-            projectNames={projectNames}
-            onClose={() => setSelectedOnline(null)}
-            onDownloaded={() => target && void connect(target)}
-          />
-        ) : (
-          <DetailsPanel skill={selected} jobs={view.jobs} agentLabel={agentLabel} onClose={() => setSelectedId(null)} />
-        )}
+        <Drawer
+          open={selectedOnline !== null || selected !== null}
+          onClose={() => {
+            setSelectedOnline(null);
+            setSelectedId(null);
+          }}
+          labelledBy={selectedOnline ? 'online-title' : 'panel-title'}
+        >
+          {selectedOnline ? (
+            <OnlinePanel
+              entry={selectedOnline}
+              project={view.project}
+              agentId={view.agents.selected}
+              destinationFolder={destinationFolder}
+              projectNames={projectNames}
+              onClose={() => setSelectedOnline(null)}
+              onDownloaded={() => target && void connect(target)}
+            />
+          ) : (
+            <DetailsPanel
+              skill={selected}
+              jobs={view.jobs}
+              agentLabel={agentLabel}
+              onClose={() => setSelectedId(null)}
+              onCompare={(skill) => {
+                setSelectedId(null);
+                setCompareSeed({ id: skill.id, nonce: Date.now() });
+              }}
+            />
+          )}
+        </Drawer>
       </div>
     </div>
   );

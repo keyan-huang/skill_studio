@@ -67,7 +67,7 @@ quiet.
 | --- | --- | --- |
 | Console | `#1C2027` | Page background |
 | Console edge | `#171A20` | Header |
-| Bank | `#242A33` | Groups of strips, details panel |
+| Bank | `#242A33` | Groups of strips, details drawer |
 | Strip | `#2D3440` | Channel strips, chips |
 | Hairline | `#3B4452` | Borders and dividers |
 | Ink / soft / faint | `#EEF0F3` / `#B3BAC6` / `#9AA3B2` | Text, all at least 4.5:1 on strips |
@@ -135,7 +135,9 @@ because users should check what it can access. Skills that can't be parked
 ### Layout
 
 - Calm, spacious layout with plenty of white space; data is the focus.
-- Side panel for details, so users never lose their place in the main view.
+- Details open in a **drawer** that slides over the page from the right only
+  when something is selected, so the main view keeps its full width. Close it
+  with the X, Escape, or a click outside; focus returns to what was clicked.
 - Dark console theme first (D-016). ❓ Open: add a light theme later?
 
 ## 4. Visualization guidelines
@@ -177,28 +179,34 @@ Screens follow the loop in [SPEC.md §7](./SPEC.md#7-how-skill-studio-works).
    projects (every project folder next to the open one and next to recent
    ones, such as everything in ~/Documents/Projects), plus "Sample skills"
    and "Another folder…" for quick switching.
-3. **Search and download**: one search box above the banks with filters
+3. **Ask the agent**: a section under the headline with two modes, "Best
+   mix for a task" (a task box, then recommended skills as small strips with
+   their role and reason, gaps as empty dashed slots, clashes, and a "Left
+   out" list) and "Compare two skills" (two pickers, then a takeaway, the
+   relationship, a side-by-side table, clashes, and advice). An approval
+   dialog lists exactly what will be sent before every request.
+4. **Search and download**: one search box above the banks with filters
    (All, This project, Your personal folder, Online). Online skills appear
    as a "crate" of dashed rows, since they aren't on the desk yet. Picking
    one opens a preview with its source, license, files, a scripts warning,
    and a **Download** button placed above the file list.
-4. **Upload**: drop in skill files or folders; plain results ("Found 23
+5. **Upload**: drop in skill files or folders; plain results ("Found 23
    skills · 1 folder isn't a skill yet").
-5. **Library**: skill cards grouped by job, with space and source badges and
+6. **Library**: skill cards grouped by job, with space and source badges and
    search.
-6. **Overlap map**: clusters by job with duplicate, overlap, and clash
+7. **Overlap map**: clusters by job with duplicate, overlap, and clash
    markers, plus a side-by-side compare.
-7. **Skill detail**: plain summary, space, source, what it can access,
+8. **Skill detail**: plain summary, space, source, what it can access,
    related skills, and example runs.
-8. **Mix builder**: goal at the top, job slots, "Left out" shelf, coverage
+9. **Mix builder**: goal at the top, job slots, "Left out" shelf, coverage
    check, wins rules, and **Save** / **Combine**.
-9. **Combine**: choose combined skill or bundle (with the recommendation and
+10. **Combine**: choose combined skill or bundle (with the recommendation and
    reason), then the combine preview, name, and description.
-10. **Load-back preview**: before and after of the VS Code space, parked-skill
+11. **Load-back preview**: before and after of the VS Code space, parked-skill
    toggles, team warning when relevant, and **Load back**.
-11. **Parked shelf**: every parked skill, why it was parked, and **Restore**.
-12. **Run view**: outcome summary at the top, run map below, contribution
-    highlight and summary side by side, details panel on the right.
+12. **Parked shelf**: every parked skill, why it was parked, and **Restore**.
+13. **Run view**: outcome summary at the top, run map below, contribution
+    highlight and summary side by side, details in the drawer.
 
 ## 6. States to design
 

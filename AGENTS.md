@@ -20,7 +20,7 @@ Before making changes, read:
 3. [docs/ROADMAP.md](./docs/ROADMAP.md) — current phase and what's in scope
 4. [docs/DECISIONS.md](./docs/DECISIONS.md) — decisions already made
 
-**Current phase:** Phase 1 (MVP), steps 1, 2, and 4 done (step 3 skipped for now). See
+**Current phase:** Phase 1 (MVP), steps 1, 2, 4, and 5 done (step 3 skipped for now). See
 [docs/ROADMAP.md](./docs/ROADMAP.md) for the next step.
 
 **How it's built:** a local web app (D-006). React + TypeScript + Vite for the
@@ -38,7 +38,11 @@ files directly; there's no separate build step.
   projects aren't changed.
 - Which skill folders each agent reads is defined once, in
   `server/agents.ts`. The public skill catalogs are defined in
-  `server/catalog.ts`.
+  `server/catalog.ts`. How each agent is run read-only is in
+  `server/agent-runner.ts`; prompts are in `server/ai.ts`.
+- Each AI check (compare, best mix) uses a real request from the owner's
+  agent plan. Test AI features with the sample project, and keep live runs
+  to one per feature.
 
 ## Who you're working with
 

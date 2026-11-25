@@ -40,6 +40,7 @@ export async function buildProjectView(args: BuildArgs): Promise<ProjectView> {
     spaces,
     jobs: notes?.jobs ?? [],
     agents,
+    aiApproved: false,
   };
 }
 

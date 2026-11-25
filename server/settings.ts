@@ -11,6 +11,8 @@ interface Settings {
   recent: RecentProject[];
   /** The agent the user picked, per project path. */
   agentChoice: Record<string, AgentId>;
+  /** Projects where the user said "Don't ask again" before AI actions. Keyed by path, or "sample". */
+  aiApproved: Record<string, boolean>;
 }
 
 export function studioFolder(): string {
@@ -27,9 +29,10 @@ export async function readSettings(): Promise<Settings> {
     return {
       recent: Array.isArray(data.recent) ? data.recent : [],
       agentChoice: typeof data.agentChoice === 'object' && data.agentChoice !== null ? data.agentChoice : {},
+      aiApproved: typeof data.aiApproved === 'object' && data.aiApproved !== null ? data.aiApproved : {},
     };
   } catch {
-    return { recent: [], agentChoice: {} };
+    return { recent: [], agentChoice: {}, aiApproved: {} };
   }
 }
 
@@ -57,5 +60,12 @@ export async function forgetProject(projectPath: string): Promise<void> {
 export async function saveAgentChoice(projectPath: string, agent: AgentId): Promise<void> {
   const settings = await readSettings();
   settings.agentChoice[projectPath] = agent;
+  await writeSettings(settings);
+}
+
+export async function setAiApproval(key: string, approved: boolean): Promise<void> {
+  const settings = await readSettings();
+  if (approved) settings.aiApproved[key] = true;
+  else delete settings.aiApproved[key];
   await writeSettings(settings);
 }
