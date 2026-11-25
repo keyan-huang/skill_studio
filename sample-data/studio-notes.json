@@ -1,0 +1,50 @@
+{
+  "about": "Made-up sample data for Skill Studio demos and checks. No real people, teams, or documents.",
+  "projectName": "Onboarding redesign",
+  "jobs": [
+    { "id": "writing-specs", "label": "Writing specs" },
+    { "id": "tone-of-voice", "label": "Tone of voice" },
+    { "id": "formatting", "label": "Document formatting" },
+    { "id": "making-slides", "label": "Making slides" },
+    { "id": "meeting-notes", "label": "Meeting notes" }
+  ],
+  "skills": {
+    "team-prd-writer": { "jobs": ["writing-specs"], "source": "team" },
+    "brand-voice": { "jobs": ["tone-of-voice"], "source": "team" },
+    "document-writer": { "jobs": ["formatting"], "source": "official" },
+    "prd-pro": { "jobs": ["writing-specs"], "source": "community" },
+    "concise-writing": { "jobs": ["tone-of-voice"], "source": "community" },
+    "slide-maker": { "jobs": ["making-slides"], "source": "official" },
+    "my-spec-template": { "jobs": ["writing-specs"], "source": "you" },
+    "deck-builder": { "jobs": ["making-slides"], "source": "community" },
+    "meeting-notes": { "jobs": ["meeting-notes"], "source": "you" }
+  },
+  "planted": {
+    "duplicates": [
+      { "skill": "document-writer", "places": ["project", "personal"], "note": "Project copy is version 2; personal copy is older." }
+    ],
+    "overlaps": [
+      { "job": "writing-specs", "skills": ["team-prd-writer", "prd-pro", "my-spec-template"] },
+      { "job": "making-slides", "skills": ["slide-maker", "deck-builder"] }
+    ],
+    "clashes": [
+      { "skills": ["brand-voice", "concise-writing"], "topic": "tone", "note": "Warm and friendly versus short and neutral." }
+    ],
+    "gaps": [
+      { "goal": "Write a spec that summarizes user research", "missingJob": "Summarizing research" }
+    ],
+    "goals": [
+      {
+        "goal": "Write product specs in my team's style",
+        "expectedMix": ["team-prd-writer", "brand-voice", "document-writer"],
+        "winsRule": { "topic": "tone", "winner": "brand-voice", "over": "concise-writing" },
+        "expectedCombine": "combined-skill"
+      },
+      {
+        "goal": "Turn a spec into a presentation",
+        "expectedMix": ["slide-maker", "document-writer", "brand-voice"],
+        "expectedCombine": "bundle"
+      }
+    ]
+  }
+}
